@@ -1,0 +1,3 @@
+include ':matrixgesturedetector'
+include ':app'
+rootProject.name = "FingerGestureTransformations"
