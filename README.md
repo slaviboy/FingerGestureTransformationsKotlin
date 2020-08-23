@@ -6,7 +6,7 @@ Simple library for applying finger gestures into transformations matrix written 
 </p>
  
 ## About
-Kotlin Library used for detecting finger gestures and applying there coresponding transformation to a 3x3 [matrix](https://developer.android.com/reference/kotlin/android/graphics/Matrix). That way you can apply the follwing transformation: scale, translate and rotate to the matrix, then it can be used to apply the transformations to shapes such as rectangles, circles, paths, lines and bitmaps. Afther that those shapes can be drawn in to a canvas retrived by the [onDraw()](https://developer.android.com/training/custom-views/custom-drawing) method from any view.
+Kotlin Library used for detecting finger gestures and applying there coresponding transformation to a 3x3 [Matrix](https://developer.android.com/reference/kotlin/android/graphics/Matrix). That way you can apply the follwing transformation: scale, translate and rotate to the matrix, then it can be used to apply the transformations to shapes such as rectangles, circles, paths, lines and bitmaps. Afther that those shapes can be drawn in to a canvas retrived by the [onDraw()](https://developer.android.com/training/custom-views/custom-drawing) method from any view.
  
 [![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
@@ -60,4 +60,4 @@ override fun onDraw(canvas: Canvas) {
 }
 ```
 
-If you are using mutiple shapes for example points, and you want to draw circles with center those particular points you can use the **mapPoints()** method and apply the matrix transformations to all points. That way there is no need to apply the matrix to the canvas and you can move circles by changing the array with point coordinates, and then again mapping the points.
+If you are using mutiple shapes for example points, and you want to draw circles with center of those particular points you can use the [mapPoints()](https://developer.android.com/reference/android/graphics/Matrix#mapPoints(float[],%20float[])) method and apply the matrix transformations to all points. That way there is no need to apply the matrix to the canvas and you can move circles by changing the array with point coordinates, and then again mapping the points.
