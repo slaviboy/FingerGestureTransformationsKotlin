@@ -39,8 +39,8 @@ class MatrixGestureDetectorInstrumentedTest {
             getMotionEvent(t, t + 40, ACTION_DOWN, x, y),                     // finger1 down
             getMotionEvent(t, t + 50, ACTION_DOWN, x, y, x + 200f, y),    // finger2 down
             getMotionEvent(t, t + 60, ACTION_MOVE, x, y, x, y + 200f),    // finger2 move
-            getMotionEvent(t, t + 50, ACTION_UP, x, y, x, y + 200f),      // finger2 up
-            getMotionEvent(t, t + 40, ACTION_UP, x, y)                        // finger1 up
+            getMotionEvent(t, t + 70, ACTION_UP, x, y, x, y + 200f),      // finger2 up
+            getMotionEvent(t, t + 80, ACTION_UP, x, y)                        // finger1 up
         )
 
 
@@ -86,6 +86,7 @@ class MatrixGestureDetectorInstrumentedTest {
         assertThat(matrixGestureDetector.translate).isEqualTo(PointF(469.70563f + 100f, 186.86292f + 50f))
         assertThat(matrixValues).isEqualTo(floatArrayOf(1.6970563f, -1.6970563f, 569.7056f, 1.6970563f, 1.6970563f, 236.86292f, 0.0f, 0.0f, 1.0f))
 
+
         // trigger the events for the rotation by 90 degrees
         for (motionEvent in rotateEvent) {
             matrixGestureDetector.onTouchEvent(motionEvent)
@@ -108,70 +109,71 @@ class MatrixGestureDetectorInstrumentedTest {
         assertThat(matrixGestureDetector.angle).isEqualTo(45f + 90f)
         assertThat(matrixGestureDetector.translate).isEqualTo(PointF(469.70563f + 100f, 186.86292f + 50f))
         assertThat(matrixValues).isEqualTo(floatArrayOf(-3.3941126f, -3.3941126f, 569.7056f, 3.3941126f, -3.3941126f, 236.86292f, 0.0f, 0.0f, 1.0f))
-
     }
 
-    /**
-     * Generate motion event for one finger.
-     * @param downTime The time (in ms) when the user originally pressed down to start a stream of position events.
-     * @param eventTime The the time (in ms) when this specific event was generated.
-     * @param action The kind of action being performed.
-     * @param x The x coordinate for first finger.
-     * @param y The y coordinate for first finger.
-     */
-    fun getMotionEvent(downTime: Long, eventTime: Long, action: Int, x: Float, y: Float): MotionEvent {
+    companion object {
+        /**
+         * Generate motion event for one finger.
+         * @param downTime The time (in ms) when the user originally pressed down to start a stream of position events.
+         * @param eventTime The the time (in ms) when this specific event was generated.
+         * @param action The kind of action being performed.
+         * @param x The x coordinate for first finger.
+         * @param y The y coordinate for first finger.
+         */
+        fun getMotionEvent(downTime: Long, eventTime: Long, action: Int, x: Float, y: Float): MotionEvent {
 
-        val properties = PointerProperties()
-        properties.id = 0
-        properties.toolType = 0 // Configurator.getInstance().getToolType()
+            val properties = PointerProperties()
+            properties.id = 0
+            properties.toolType = 0
 
-        val coordinates = PointerCoords()
-        coordinates.pressure = 1f
-        coordinates.size = 1f
-        coordinates.x = x
-        coordinates.y = y
+            val coordinates = PointerCoords()
+            coordinates.pressure = 1f
+            coordinates.size = 1f
+            coordinates.x = x
+            coordinates.y = y
 
-        return obtain(
-            downTime, eventTime, action, 1, arrayOf(properties), arrayOf(coordinates),
-            0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
-        )
-    }
+            return obtain(
+                downTime, eventTime, action, 1, arrayOf(properties), arrayOf(coordinates),
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
+            )
+        }
 
-    /**
-     * Generate motion event for two fingers.
-     * @param downTime The time (in ms) when the user originally pressed down to start a stream of position events.
-     * @param eventTime The the time (in ms) when this specific event was generated.
-     * @param action The kind of action being performed.
-     * @param x1 The x coordinate for first finger.
-     * @param y1 The y coordinate for first finger.
-     * @param x2 The x coordinate for second finger.
-     * @param y2 The y coordinate for second finger.
-     */
-    fun getMotionEvent(downTime: Long, eventTime: Long, action: Int, x1: Float, y1: Float, x2: Float, y2: Float): MotionEvent {
+        /**
+         * Generate motion event for two fingers.
+         * @param downTime The time (in ms) when the user originally pressed down to start a stream of position events.
+         * @param eventTime The the time (in ms) when this specific event was generated.
+         * @param action The kind of action being performed.
+         * @param x1 The x coordinate for first finger.
+         * @param y1 The y coordinate for first finger.
+         * @param x2 The x coordinate for second finger.
+         * @param y2 The y coordinate for second finger.
+         */
+        fun getMotionEvent(downTime: Long, eventTime: Long, action: Int, x1: Float, y1: Float, x2: Float, y2: Float): MotionEvent {
 
-        val properties1 = PointerProperties()
-        properties1.id = 0
-        properties1.toolType = 0
+            val properties1 = PointerProperties()
+            properties1.id = 0
+            properties1.toolType = 0
 
-        val pointerCoordinates1 = PointerCoords()
-        pointerCoordinates1.pressure = 1f
-        pointerCoordinates1.size = 1f
-        pointerCoordinates1.x = x1
-        pointerCoordinates1.y = y1
+            val pointerCoordinates1 = PointerCoords()
+            pointerCoordinates1.pressure = 1f
+            pointerCoordinates1.size = 1f
+            pointerCoordinates1.x = x1
+            pointerCoordinates1.y = y1
 
-        val properties2 = PointerProperties()
-        properties2.id = 1
-        properties2.toolType = 0
+            val properties2 = PointerProperties()
+            properties2.id = 1
+            properties2.toolType = 0
 
-        val pointerCoordinates2 = PointerCoords()
-        pointerCoordinates2.pressure = 1f
-        pointerCoordinates2.size = 1f
-        pointerCoordinates2.x = x2
-        pointerCoordinates2.y = y2
+            val pointerCoordinates2 = PointerCoords()
+            pointerCoordinates2.pressure = 1f
+            pointerCoordinates2.size = 1f
+            pointerCoordinates2.x = x2
+            pointerCoordinates2.y = y2
 
-        return obtain(
-            downTime, eventTime, action, 2, arrayOf(properties1, properties2), arrayOf(pointerCoordinates1, pointerCoordinates2),
-            0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
-        )
+            return obtain(
+                downTime, eventTime, action, 2, arrayOf(properties1, properties2), arrayOf(pointerCoordinates1, pointerCoordinates2),
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
+            )
+        }
     }
 }

@@ -30,10 +30,9 @@ import android.view.MotionEvent
  */
 open class MatrixGestureDetector(var matrix: Matrix = Matrix(), listener: OnMatrixChangeListener? = null) {
 
-    internal var pointerIndex: Int                  // index showing the first pair of source and distance values for setPolyToPoly()
     internal var tempMatrix: Matrix                 // temp matrix with applied finger gesture fro current event, that is then concat with the main matrix
-    internal var source: FloatArray                 // array with the 4 coordinates from the two fingers set on TOUCH_DOWN event
-    internal var distance: FloatArray               // array with the 4 coordinates from the two fingers set on TOUCH_MOVE event
+    internal var upDownCoordinates: FloatArray      // array with the 4 coordinates from the two fingers set on TOUCH_UP, TOUCH_DOWN events
+    internal var moveCoordinates: FloatArray        // array with the 4 coordinates from the two fingers set on TOUCH_MOVE event
     lateinit var listener: OnMatrixChangeListener   // listener object with method onMatrixChange(), called when the main matrix is changed
 
     var scale: Float                                // current scale factor used same for x and y directions
@@ -49,10 +48,9 @@ open class MatrixGestureDetector(var matrix: Matrix = Matrix(), listener: OnMatr
         scale = 0f
         angle = 0f
         translate = PointF()
-        pointerIndex = 0
         tempMatrix = Matrix()
-        source = FloatArray(4)
-        distance = FloatArray(4)
+        upDownCoordinates = FloatArray(4)
+        moveCoordinates = FloatArray(4)
         setTransformations()
     }
 
@@ -63,7 +61,7 @@ open class MatrixGestureDetector(var matrix: Matrix = Matrix(), listener: OnMatr
      */
     fun onTouchEvent(event: MotionEvent) {
 
-        // allow only two fingers
+        // only two fingers
         if (event.pointerCount > 2) {
             return
         }
@@ -71,38 +69,35 @@ open class MatrixGestureDetector(var matrix: Matrix = Matrix(), listener: OnMatr
         when (event.actionMasked) {
 
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-
-                for (i in 0 until event.pointerCount) {
-                    val id = event.getPointerId(i)
-                    source[id * 2] = event.getX(i)
-                    source[id * 2 + 1] = event.getY(i)
-                }
-
-                pointerIndex = 0
+                getPointersCoordinates(event, upDownCoordinates)
             }
 
             MotionEvent.ACTION_MOVE -> {
-                for (i in 0 until event.pointerCount) {
-                    val id = event.getPointerId(i)
-                    distance[id * 2] = event.getX(i)
-                    distance[id * 2 + 1] = event.getY(i)
-                }
+                getPointersCoordinates(event, moveCoordinates)
 
-                // use poly to poly to detect transformations
-                tempMatrix.setPolyToPoly(source, pointerIndex, distance, pointerIndex, event.pointerCount)
+                // use poly to poly to detect transformations, using the difference of the pointer
+                // coordinates before and after the moving of the fingers
+                tempMatrix.setPolyToPoly(upDownCoordinates, 0, moveCoordinates, 0, event.pointerCount)
                 matrix.postConcat(tempMatrix)
+                System.arraycopy(moveCoordinates, 0, upDownCoordinates, 0, moveCoordinates.size)
 
+                // call the listener indicating tha change to the matrix was made
                 if (::listener.isInitialized) {
                     listener.onMatrixChange(matrix)
                 }
-
-                System.arraycopy(distance, 0, source, 0, distance.size)
             }
 
-             MotionEvent.ACTION_POINTER_UP -> {
+            MotionEvent.ACTION_POINTER_UP -> {
 
-                val index = event.actionIndex
-                if (event.getPointerId(index) == 0) pointerIndex = 2
+                val idActive = event.getPointerId(event.actionIndex)            // id of the pointed that activated the event and is now UP
+                val idFirst = event.getPointerId(0)                  // id of the first pointer index
+                val idSecond = event.getPointerId(1)                 // if of the second pointer index
+                val idInactive = if (idActive == idFirst) idSecond else idFirst // find the inactive pointer that is still DOWN
+
+                // get the pointer index for the pointer that is still DOWN and use it to get its coordinates
+                val pointerIndex = event.findPointerIndex(idInactive)
+                upDownCoordinates[0] = event.getX(pointerIndex)
+                upDownCoordinates[1] = event.getY(pointerIndex)
             }
         }
 
@@ -133,6 +128,20 @@ open class MatrixGestureDetector(var matrix: Matrix = Matrix(), listener: OnMatr
 
         // set rotation as angle in degrees
         angle = -(Math.atan2(skewX.toDouble(), scaleX.toDouble()) * (180.0 / Math.PI)).toFloat()
+    }
+
+    /**
+     * Get the coordinates for the pointers and put them into a given array
+     * @param event motion events
+     * @param array array where the coordinates for the pointer will be set
+     */
+    fun getPointersCoordinates(event: MotionEvent, array: FloatArray) {
+        for (i in 0 until event.pointerCount) {
+            val id = event.getPointerId(i)
+            val pointerIndex = event.findPointerIndex(id)
+            array[i * 2] = event.getX(pointerIndex)
+            array[i * 2 + 1] = event.getY(pointerIndex)
+        }
     }
 
     /**
